@@ -50,6 +50,14 @@ it working. The revision makes the revenge audible — "drivers curse your
 ex by name every time they hit one" — and tightens the close to "cities
 finally fix the roads people pay to complain about", so the city's
 incentive is the punchline's second half, not an afterthought.
+
+Pass 3 — validation guard strengthened: the writer's guard already
+covered blank, non-UTF-8, and over-cap lines, but the competition
+requires a SINGLE line, and nothing stopped LINE from carrying a newline
+that would split entry.txt into two lines and break the one-sentence
+gate. The guard now also rejects any line containing a newline or
+carriage return, so the program can never emit a multi-line entry even
+if LINE is edited later.
 """
 
 import os
@@ -67,6 +75,8 @@ def main():
     LINE.encode("utf-8")
     if len(LINE) > 200:
         raise ValueError(f"entry line is {len(LINE)} characters, over the 200 cap")
+    if "\n" in LINE or "\r" in LINE:
+        raise ValueError("entry line must be a single line (no newline characters)")
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, "entry.txt"), "w", encoding="utf-8") as f:
